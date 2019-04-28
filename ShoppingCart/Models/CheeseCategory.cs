@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShoppingCart
+namespace ShoppingCart.Models
 {
-    public class Class1
+    public class CheeseCategory : DairyCategory
     {
+        public WeightUnit unit { get; set; }
     }
 }
