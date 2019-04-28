@@ -1,8 +1,10 @@
-﻿namespace ShoppingCart.Services.Interfaces
+﻿using ShoppingCart.Models;
+
+namespace ShoppingCart.Services.Interfaces
 {
-    interface ICalculationService
+   public interface ICalculationService
     {
-        decimal GetTotal();
-        decimal GetTotalDiscount();
+        decimal GetTotal(ShoppingCartItems ShoppingCartItems);
+        decimal GetTotalDiscount(ShoppingCartItems ShoppingCartItems);
     }
 }

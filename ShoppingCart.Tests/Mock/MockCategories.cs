@@ -9,11 +9,12 @@ namespace ShoppingCart.Tests.Mock
 {
     public class MockCategories
     {
-        List<Category> _Categories = new List<Category>();
+        public List<Category> Categories;
 
         public MockCategories()
         {
-            _Categories.AddRange(new List<Category>() {
+            Categories = new List<Category>();
+            Categories.AddRange(new List<Category>() {
                 new ProduceCategory
                 {
                     Discount = 0.1M,
@@ -67,5 +68,6 @@ namespace ShoppingCart.Tests.Mock
 
             });
         }
+
     }
 }

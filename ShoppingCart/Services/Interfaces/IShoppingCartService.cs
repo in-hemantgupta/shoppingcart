@@ -2,10 +2,10 @@
 
 namespace ShoppingCart.Services
 {
-    interface IShoppingCartService
+   public interface IShoppingCartService
     {
         decimal GetTotal();
-        void AddItem(Product item);
+        void AddItem(Product item, int quantity = 1);
         void RemoveItem(Product item);
 
         ShoppingCartItems GetCart();

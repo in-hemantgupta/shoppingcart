@@ -8,29 +8,27 @@ using System.Threading.Tasks;
 
 namespace ShoppingCart.Services
 {
-    class CalculationService : ICalculationService
+    public class CalculationService : ICalculationService
     {
-        private ShoppingCartItems _shoppingCartItems;
-        private CategoryService _categoryService;
-        public CalculationService(ShoppingCartItems items, CategoryService CategoryService)
+        private ICategoryService _categoryService;
+        public CalculationService(ICategoryService CategoryService)
         {
-            _shoppingCartItems = items;
             _categoryService = CategoryService;
         }
 
-        public decimal GetTotal()
+        public decimal GetTotal(ShoppingCartItems ShoppingCartItems)
         {
-            decimal ItemsDiscount = 0; decimal ItemsTotal = 0;
-            _shoppingCartItems.Items.ForEach(s => { ItemsDiscount += s.Product.Discount * s.Product.Price; ItemsTotal = s.Product.Price; });
+            decimal ItemsTotal = 0;
+            ShoppingCartItems.Items.ForEach(s => { ItemsTotal += s.Product.Price * s.Count; });
             return ItemsTotal;
         }
 
-        public decimal GetTotalDiscount()
+        public decimal GetTotalDiscount(ShoppingCartItems ShoppingCartItems)
         {
             decimal TotalPriceAfterDiscount = 0;
-            decimal TotalPrice = 0;
+           // decimal TotalPrice = 0;
 
-            _shoppingCartItems.Items.ForEach(s =>
+            ShoppingCartItems.Items.ForEach(s =>
             {
                 if (s.Product is BuyMoreGetMoreProduct)
                 {
@@ -41,29 +39,29 @@ namespace ShoppingCart.Services
                     var actualFreeItems = eligibleFreeItems * item.NoOfFreeItems;
                     //minus these free items from total
                     var itemsPriceAfterDiscount = CalculateDiscountPrice(s.Product.Discount, s.Product.Price, (s.Count - actualFreeItems));
-                    TotalPriceAfterDiscount += GetBestCategoryDiscount(s, itemsPriceAfterDiscount);
+                    TotalPriceAfterDiscount += GetBestCategoryDiscount(s, s.Product.Price * s.Count - itemsPriceAfterDiscount);
                 }
                 else
                 {
-                    TotalPriceAfterDiscount += CalculateDiscountPrice(s.Product.Discount, s.Product.Price, s.Count);
+                    TotalPriceAfterDiscount += GetBestCategoryDiscount(s, CalculateDiscountPrice(s.Product.Discount, s.Product.Price, s.Count));
                 }
-                TotalPrice += s.Product.Price;
+                //TotalPrice += s.Product.Price * s.Count;
             });
-            return TotalPrice - TotalPriceAfterDiscount;
+            return TotalPriceAfterDiscount;
         }
 
         private decimal GetBestCategoryDiscount(CartItem item, decimal itemPriceAfterDiscount)
         {
             decimal bestDiscountedPrice = itemPriceAfterDiscount;
             bestDiscountedPrice = GetCategoryDiscount(item.Product.CategoryId, item, bestDiscountedPrice);
-            var ParentCategory = _categoryService.FindCategory(item.Product.CategoryId);
+            var Category = _categoryService.FindCategory(item.Product.CategoryId);
             //calculate the discount to parent category
-            while (ParentCategory != null)
+            while (Category.ParentId != null)
             {
-                bestDiscountedPrice = GetCategoryDiscount(ParentCategory.Id, item, bestDiscountedPrice);
-                if (ParentCategory.ParentId == null)
+                bestDiscountedPrice = GetCategoryDiscount(Category.ParentId.Value, item, bestDiscountedPrice);
+                if (Category.ParentId == null)
                     break;
-                ParentCategory = _categoryService.FindCategory(ParentCategory.ParentId.Value);
+                Category = _categoryService.FindCategory(Category.ParentId.Value);
             }
             return bestDiscountedPrice;
         }
