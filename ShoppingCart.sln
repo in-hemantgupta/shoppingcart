@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingCart", "ShoppingCar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingCart.Tests", "ShoppingCart.Tests\ShoppingCart.Tests.csproj", "{A8BFAAA5-2896-4756-BEC2-00331AFBCA5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{F70037DC-7F7C-438A-A62C-D5BC0B6D350E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A8BFAAA5-2896-4756-BEC2-00331AFBCA5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8BFAAA5-2896-4756-BEC2-00331AFBCA5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8BFAAA5-2896-4756-BEC2-00331AFBCA5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F70037DC-7F7C-438A-A62C-D5BC0B6D350E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F70037DC-7F7C-438A-A62C-D5BC0B6D350E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F70037DC-7F7C-438A-A62C-D5BC0B6D350E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F70037DC-7F7C-438A-A62C-D5BC0B6D350E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

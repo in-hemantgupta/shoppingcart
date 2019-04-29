@@ -1,4 +1,5 @@
-﻿using ShoppingCart.Models;
+﻿using Logger;
+using ShoppingCart.Models;
 using ShoppingCart.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,12 @@ namespace ShoppingCart.Services
     public class CalculationService : ICalculationService
     {
         private ICategoryService _categoryService;
-        public CalculationService(ICategoryService CategoryService)
+        private ILogger _logger;
+
+        public CalculationService(ICategoryService CategoryService, ILogger logger )
         {
             _categoryService = CategoryService;
+            _logger = logger;
         }
 
         public decimal GetTotal(ShoppingCartItems ShoppingCartItems)
@@ -25,29 +29,37 @@ namespace ShoppingCart.Services
 
         public decimal GetTotalDiscount(ShoppingCartItems ShoppingCartItems)
         {
-            decimal TotalPriceAfterDiscount = 0;
-           // decimal TotalPrice = 0;
-
-            ShoppingCartItems.Items.ForEach(s =>
+            try
             {
-                if (s.Product is BuyMoreGetMoreProduct)
-                {
-                    var item = s.Product as BuyMoreGetMoreProduct;
+                decimal TotalPriceAfterDiscount = 0;
+                // decimal TotalPrice = 0;
 
-                    var eligibleFreeItems = Math.Floor(Convert.ToDecimal(s.Count / (item.NoOfFreeItems + item.NoOfItemsToBuy)));
-                    //Get the number of items which are free 
-                    var actualFreeItems = eligibleFreeItems * item.NoOfFreeItems;
-                    //minus these free items from total
-                    var itemsPriceAfterDiscount = CalculateDiscountPrice(s.Product.Discount, s.Product.Price, (s.Count - actualFreeItems));
-                    TotalPriceAfterDiscount += GetBestCategoryDiscount(s, s.Product.Price * s.Count - itemsPriceAfterDiscount);
-                }
-                else
+                ShoppingCartItems.Items.ForEach(s =>
                 {
-                    TotalPriceAfterDiscount += GetBestCategoryDiscount(s, CalculateDiscountPrice(s.Product.Discount, s.Product.Price, s.Count));
-                }
-                //TotalPrice += s.Product.Price * s.Count;
-            });
-            return TotalPriceAfterDiscount;
+                    if (s.Product is BuyMoreGetMoreProduct)
+                    {
+                        var item = s.Product as BuyMoreGetMoreProduct;
+
+                        var eligibleFreeItems = Math.Floor(Convert.ToDecimal(s.Count / (item.NoOfFreeItems + item.NoOfItemsToBuy)));
+                        //Get the number of items which are free 
+                        var actualFreeItems = eligibleFreeItems * item.NoOfFreeItems;
+                        //minus these free items from total
+                        var itemsPriceAfterDiscount = CalculateDiscountPrice(s.Product.Discount, s.Product.Price, (s.Count - actualFreeItems));
+                        TotalPriceAfterDiscount += GetBestCategoryDiscount(s, s.Product.Price * s.Count - itemsPriceAfterDiscount);
+                    }
+                    else
+                    {
+                        TotalPriceAfterDiscount += GetBestCategoryDiscount(s, CalculateDiscountPrice(s.Product.Discount, s.Product.Price, s.Count));
+                    }
+                    //TotalPrice += s.Product.Price * s.Count;
+                });
+                return TotalPriceAfterDiscount;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Caught some error: " + ex.Message);
+                return 0;
+            }
         }
 
         private decimal GetBestCategoryDiscount(CartItem item, decimal itemPriceAfterDiscount)

@@ -4,6 +4,8 @@ using ShoppingCart.Services;
 using System.Collections.Generic;
 using ShoppingCart.Models;
 using ShoppingCart.Services.Interfaces;
+using Logger;
+using Moq;
 
 namespace ShoppingCart.Tests
 {
@@ -19,13 +21,20 @@ namespace ShoppingCart.Tests
         List<CartItem> CartItems;
         Mock.MockProducts MockProductService;
         IBuyMoreGetMoreService BuyMoreGetMoreService;
+        Mock<ILogger> loggerService;
 
         [SetUp]
         public void Setup()
         {
             Categories = new Mock.MockCategories().Categories;
             CategoryService = new CategoryService(Categories);
-            CalculationService = new CalculationService(CategoryService);
+
+            loggerService = new Mock<ILogger>();
+            loggerService.Setup(l => l.LogError(It.IsAny<string>()));
+            loggerService.Setup(l => l.LogInfo(It.IsAny<string>()));
+            loggerService.Setup(l => l.LogWarning(It.IsAny<string>()));
+
+            CalculationService = new CalculationService(CategoryService, loggerService.Object);
             ShoppingCartService = new ShoppingCartService(CalculationService);
             BuyMoreGetMoreService = new BuyMoreGetMoreService();
             MockProductService = new Mock.MockProducts(BuyMoreGetMoreService);
@@ -79,7 +88,24 @@ namespace ShoppingCart.Tests
             Assert.That(result.Id, Is.Not.Null);
             Assert.That(result.Items[0].Count, Is.EqualTo(6));
             Assert.That(result.Items[0].Product.Name, Is.EqualTo(MockProductService.CreateProduct(Mock.MockProducts.Products.Apple).Name));
-            Assert.That(result.TotalValue - result.TotalDiscount, Is.EqualTo(250));
+            Assert.That(result.TotalValue - result.TotalDiscount, Is.EqualTo(246));
+        }
+
+        [Test]
+        public void WhenAddProduct_5Apple_CartTotalValueShouldBe200()
+        {
+            var OfferedApple = BuyMoreGetMoreService.AddOffer(MockProductService.CreateProduct(Mock.MockProducts.Products.Apple), 3, 1);
+            ShoppingCartService.AddItem(OfferedApple);
+            ShoppingCartService.AddItem(OfferedApple);
+            ShoppingCartService.AddItem(OfferedApple);
+            ShoppingCartService.AddItem(OfferedApple);
+            ShoppingCartService.AddItem(OfferedApple);
+
+            var result = ShoppingCartService.GetCart();
+            Assert.That(result.Id, Is.Not.Null);
+            Assert.That(result.Items[0].Count, Is.EqualTo(5));
+            Assert.That(result.Items[0].Product.Name, Is.EqualTo(MockProductService.CreateProduct(Mock.MockProducts.Products.Apple).Name));
+            Assert.That(result.TotalValue - result.TotalDiscount, Is.EqualTo(200));
         }
 
         [Test]
@@ -107,7 +133,7 @@ namespace ShoppingCart.Tests
         }
 
         [Test]
-        public void WhenAddProducts_MultipleProducts_CartTotalDiscountValueShouldBe355()
+        public void WhenAddProducts_MultipleProducts_CartTotalDiscountValueShouldBe359()
         {
             CartItems.ForEach(item =>
             {
@@ -117,8 +143,8 @@ namespace ShoppingCart.Tests
             var result = ShoppingCartService.GetCart();
             Assert.That(result.Id, Is.Not.Null);
             Assert.That(result.Items.Count, Is.EqualTo(6));
-            Assert.That(result.TotalValue , Is.EqualTo(1650));
-            Assert.That(result.TotalDiscount, Is.EqualTo(355));
+            Assert.That(result.TotalValue, Is.EqualTo(1650));
+            Assert.That(result.TotalDiscount, Is.EqualTo(359));
         }
     }
 }
